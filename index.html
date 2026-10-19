@@ -145,9 +145,12 @@ body { color: var(--navy); font-family: var(--font-body); line-height: 1.6; }
 .idol .tag b { font-weight: 600; font-size: clamp(18px, 2vw, 26px); letter-spacing: .02em; text-transform: uppercase; }
 .idol .go { position: absolute; left: 0; bottom: -26px; font-family: var(--font-display); font-size: 12px; letter-spacing: .22em; white-space: nowrap; opacity: 0; transform: translateX(-6px); transition: opacity .25s, transform .25s; }
 .idol.on .go, .idol:hover .go, .idol:focus-visible .go { opacity: 1; transform: none; }
-.art-nav { position: absolute; z-index: 4; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; }
-.art-arrow { width: 56px; height: 44px; display: grid; place-items: center; padding: 0; background: var(--paper); color: var(--navy); border: 1px solid rgba(23,36,74,.3); cursor: pointer; transition: background .25s, color .25s, opacity .25s; }
-.art-arrow + .art-arrow { border-left: 0; }
+/* Arrows sit at both ends of the photo row, level with the photos' middle */
+.art-nav { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.art-arrow { position: absolute; top: calc(50% - 24px); transform: translateY(-50%); pointer-events: auto; width: 52px; height: 52px; display: grid; place-items: center; padding: 0; background: color-mix(in srgb, var(--paper) 88%, transparent); color: var(--navy); border: 1px solid rgba(23,36,74,.3); cursor: pointer; transition: background .25s, color .25s, opacity .25s; }
+#artPrev { left: max(16px, env(safe-area-inset-left, 0px)); }
+#artNext { right: max(16px, env(safe-area-inset-right, 0px)); }
+@media (max-width: 700px) { .art-arrow { width: 44px; height: 44px; } }
 .art-arrow svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: square; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
 .art-arrow:hover:not(:disabled), .art-arrow:focus-visible { background: var(--navy); color: var(--white); }
 #artPrev:hover:not(:disabled) svg { transform: translateX(-3px); }
