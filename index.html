@@ -128,7 +128,7 @@ body { color: var(--navy); font-family: var(--font-body); line-height: 1.6; }
 .counter { position: absolute; z-index: 4; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(96px + env(safe-area-inset-top, 0px)); font-family: var(--font-display); font-size: 13px; letter-spacing: .2em; font-variant-numeric: tabular-nums; color: var(--navy-soft); }
 @media (max-width: 700px) { .card { width: 62vw; } .caption { top: calc(50% + 31vw * .75 + 14px); } }
 
-/* 4. Artists — cut-out navy shapes on a sideways track; pointing at one spreads the photo through it in a soft circle, clicking opens its products */
+/* 4. Artists — cut-out photos on a sideways track (scroll or arrows); pointing lifts one, clicking opens its products */
 .artists { position: relative; height: 340vh; background: var(--paper); }
 .artists-pin {
   position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
@@ -137,14 +137,22 @@ body { color: var(--navy); font-family: var(--font-body); line-height: 1.6; }
 }
 .lineup { position: absolute; left: 0; top: 50%; display: flex; align-items: flex-end; gap: clamp(56px, 8vw, 140px); padding-inline: max(24px, 10vw); transform: translateY(-50%); will-change: transform; }
 .idol { position: relative; flex: none; display: grid; gap: 16px; justify-items: start; padding: 0; background: none; border: 0; color: var(--navy); cursor: pointer; text-align: left; transition: opacity .35s, transform .35s cubic-bezier(.2,.8,.2,1); }
-.idol canvas { display: block; }
-.lineup.focus .idol:not(.on) { opacity: .32; }
-.idol.on { transform: translateY(-8px); }
+.idol img { display: block; height: var(--h, 40vh); width: auto; transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+.idol.on, .idol:hover, .idol:focus-visible { transform: translateY(-8px); }
+.idol:hover img, .idol:focus-visible img { transform: scale(1.02); transform-origin: 50% 100%; }
 .idol .tag { display: flex; align-items: baseline; gap: 14px; font-family: var(--font-display); }
 .idol .tag i { font-style: normal; font-size: 12px; letter-spacing: .2em; color: var(--navy-soft); font-variant-numeric: tabular-nums; }
 .idol .tag b { font-weight: 600; font-size: clamp(18px, 2vw, 26px); letter-spacing: .02em; text-transform: uppercase; }
 .idol .go { position: absolute; left: 0; bottom: -26px; font-family: var(--font-display); font-size: 12px; letter-spacing: .22em; white-space: nowrap; opacity: 0; transform: translateX(-6px); transition: opacity .25s, transform .25s; }
-.idol.on .go { opacity: 1; transform: none; }
+.idol.on .go, .idol:hover .go, .idol:focus-visible .go { opacity: 1; transform: none; }
+.art-nav { position: absolute; z-index: 4; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; }
+.art-arrow { width: 56px; height: 44px; display: grid; place-items: center; padding: 0; background: var(--paper); color: var(--navy); border: 1px solid rgba(23,36,74,.3); cursor: pointer; transition: background .25s, color .25s, opacity .25s; }
+.art-arrow + .art-arrow { border-left: 0; }
+.art-arrow svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: square; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.art-arrow:hover:not(:disabled), .art-arrow:focus-visible { background: var(--navy); color: var(--white); }
+#artPrev:hover:not(:disabled) svg { transform: translateX(-3px); }
+#artNext:hover:not(:disabled) svg { transform: translateX(3px); }
+.art-arrow:disabled { opacity: .3; cursor: default; }
 .idol:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 10px; }
 .art-hint { position: absolute; z-index: 4; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(32px + env(safe-area-inset-bottom, 0px)); margin: 0; font-family: var(--font-display); font-size: 12px; letter-spacing: .24em; color: var(--navy-soft); }
 
@@ -325,7 +333,11 @@ button:focus-visible { outline: 2px solid #ff5a1f; outline-offset: -2px; }
       <p class="label">ARTISTS · IP</p>
       <p class="counter" id="artCount">01 / 05</p>
       <div class="lineup" id="lineup"></div>
-      <p class="art-hint" id="artHint">POINT AT AN ARTIST · CLICK FOR PRODUCTS</p>
+      <p class="art-hint" id="artHint">SCROLL OR USE ARROWS · CLICK FOR PRODUCTS</p>
+      <div class="art-nav">
+        <button type="button" class="art-arrow" id="artPrev" aria-label="이전 아티스트"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H4M10 6l-6 6 6 6"/></svg></button>
+        <button type="button" class="art-arrow" id="artNext" aria-label="다음 아티스트"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg></button>
+      </div>
     </div>
   </section>
 </main>
@@ -845,7 +857,7 @@ button:focus-visible { outline: 2px solid #ff5a1f; outline-offset: -2px; }
     listTop.style.clipPath = `inset(${cr.top - pr.top - (listTop.getBoundingClientRect().top - pr.top)}px ${pr.right - cr.right}px ${listTop.getBoundingClientRect().bottom - cr.bottom}px ${cr.left - pr.left}px)`;
   }
 
-  /* ---------- 4. Artists: navy cut-out shapes → photo where you point, click opens their products ---------- */
+  /* ---------- 4. Artists: cut-out photos on a sideways track (scroll or arrows), click opens their products ---------- */
   const ARTISTS = [
     { name: 'BTS', img: 'images/cut/bts.png', go: ['PRODUCTS', 'K-POP'] },
     { name: 'SEVENTEEN', img: 'images/cut/seventeen.png', go: ['PRODUCTS', 'K-POP', 'SEVENTEEN'] },
@@ -855,94 +867,51 @@ button:focus-visible { outline: 2px solid #ff5a1f; outline-offset: -2px; }
   ];
   const artists = $('artists'), lineup = $('lineup'), artCount = $('artCount'), artHint = $('artHint');
   const noHover = matchMedia('(hover: none)').matches;
-  if (noHover) artHint.textContent = 'TAP AN ARTIST FOR PRODUCTS';
+  if (noHover) artHint.textContent = 'SCROLL OR USE ARROWS · TAP FOR PRODUCTS';
   ARTISTS.forEach((a, i) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'idol'; b.setAttribute('aria-label', `${a.name} 제품 보기`);
-    b.innerHTML = `<canvas aria-hidden="true"></canvas><span class="tag"><i>${String(i + 1).padStart(2, '0')}</i><b></b></span><span class="go">VIEW PRODUCTS →</span>`;
+    b.innerHTML = `<img alt="" decoding="async"><span class="tag"><i>${String(i + 1).padStart(2, '0')}</i><b></b></span><span class="go">VIEW PRODUCTS →</span>`;
     b.querySelector('b').textContent = a.name;
+    a.im = b.querySelector('img'); a.im.addEventListener('load', sizeLineup); a.im.src = a.img;
     lineup.appendChild(b);
-    Object.assign(a, { el: b, cv: b.querySelector('canvas'), r: 0, target: 0, prepped: false });
-    a.ctx = a.cv.getContext('2d');
-    a.im = new Image(); a.im.onload = () => { a.ready = true; sizeLineup(); }; a.im.src = a.img;
-    const enter = e => {
-      if (a.target === 1) return;
-      const rc = a.cv.getBoundingClientRect();
-      orderFrom(a, e && e.clientX != null ? (e.clientX - rc.left) / rc.width : .5, e && e.clientY != null ? (e.clientY - rc.top) / rc.height : .5);
-      a.target = 1;
-    };
-    const leave = () => { a.target = 0; };
-    if (!noHover) { b.addEventListener('pointerenter', enter); b.addEventListener('pointerleave', leave); }
-    b.addEventListener('focus', () => enter()); b.addEventListener('blur', leave);
+    a.el = b;
     b.addEventListener('click', () => go(a.go[0], a.go[1], b, a.go[2]));
   });
-  // The photo spreads out from where the pointer came in, as a soft-edged circle
-  function orderFrom(a, ux, uy) {
-    const W = a.cv.width, H = a.cv.height;
-    a.ox = ux * W; a.oy = uy * H;
-    a.maxR = Math.max(Math.hypot(a.ox, a.oy), Math.hypot(W - a.ox, a.oy), Math.hypot(a.ox, H - a.oy), Math.hypot(W - a.ox, H - a.oy));
-  }
-  function prepArtist(a) {
-    const W = a.cv.width, H = a.cv.height;
-    const photo = document.createElement('canvas'); photo.width = W; photo.height = H;
-    photo.getContext('2d').drawImage(a.im, 0, 0, W, H);
-    const shape = document.createElement('canvas'); shape.width = W; shape.height = H;
-    const sx = shape.getContext('2d');
-    sx.drawImage(a.im, 0, 0, W, H); sx.globalCompositeOperation = 'source-in'; sx.fillStyle = NAVY; sx.fillRect(0, 0, W, H);
-    const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = H;
-    a.photo = photo; a.shape = shape; a.tmp = tmp; a.tctx = tmp.getContext('2d');
-    a.prepped = true; orderFrom(a, .5, .5); a.drawn = -1;
-  }
-  let lineupW = 0;
+  let lineupW = 0, lineX = 0;
   function sizeLineup() {
     const H = innerWidth < 700 ? Math.min(innerHeight * .34, 300) : Math.min(innerHeight * .44, 430);
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    ARTISTS.forEach(a => {
-      if (!a.ready) return;
-      const w = H * a.im.naturalWidth / a.im.naturalHeight;
-      a.cv.style.width = w.toFixed(1) + 'px'; a.cv.style.height = H.toFixed(1) + 'px';
-      a.cv.width = Math.round(w * dpr); a.cv.height = Math.round(H * dpr);
-      prepArtist(a);
-    });
+    lineup.style.setProperty('--h', H.toFixed(1) + 'px');
     lineupW = lineup.scrollWidth;
   }
-  let lastArtT = 0;
+  // Arrows: move the track so the previous / next artist sits in the middle (by scrolling the page, so scroll and arrows stay in sync)
+  const artPrev = $('artPrev'), artNext = $('artNext');
+  const artSpan = () => Math.max(0, lineupW - innerWidth);
+  const xFor = a => clamp(innerWidth / 2 - (a.el.offsetLeft + a.el.offsetWidth / 2), -artSpan(), 0);
+  const ioInv = u => u < .5 ? Math.cbrt(u / 4) : 1 - Math.cbrt(2 * (1 - u)) / 2;
+  function artStep(dir) {
+    const span = artSpan();
+    if (!span) return;
+    const xs = ARTISTS.map(xFor);
+    const x = dir > 0 ? xs.find(v => v < lineX - 2) : xs.slice().reverse().find(v => v > lineX + 2);
+    if (x == null) return;
+    const t = .06 + .88 * ioInv(clamp(-x / span));
+    scrollTo({ top: artists.offsetTop + t * (artists.offsetHeight - innerHeight), behavior: reduce ? 'auto' : 'smooth' });
+  }
+  artPrev.addEventListener('click', () => artStep(-1));
+  artNext.addEventListener('click', () => artStep(1));
   function updateArtists(t) {
-    const now = performance.now(), dt = Math.min(64, now - (lastArtT || now)); lastArtT = now;
     // sideways track
-    const span = Math.max(0, lineupW - innerWidth);
-    const x = span > 0 ? -span * io(seg(t, .06, .94)) : (innerWidth - lineupW) / 2;
-    lineup.style.transform = `translate(${x.toFixed(1)}px, -50%)`;
+    const span = artSpan();
+    lineX = span > 0 ? -span * io(seg(t, .06, .94)) : (innerWidth - lineupW) / 2;
+    lineup.style.transform = `translate(${lineX.toFixed(1)}px, -50%)`;
     // which artist sits nearest the middle of the screen
     let mid = 0, best = Infinity;
     ARTISTS.forEach((a, i) => { const r = a.el.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - innerWidth / 2); if (d < best) { best = d; mid = i; } });
     artCount.textContent = `${String(mid + 1).padStart(2, '0')} / ${String(ARTISTS.length).padStart(2, '0')}`;
-    if (noHover) ARTISTS.forEach((a, i) => { const want = i === mid ? 1 : 0; if (want && a.target !== 1) orderFrom(a, .5, .35); a.target = want; });
-    let any = false;
-    ARTISTS.forEach(a => {
-      if (!a.ready || !a.prepped) return;
-      const speed = a.target ? 1 / 650 : 1 / 450;
-      a.r = reduce ? a.target : clamp(a.r + Math.sign(a.target - a.r) * dt * speed);
-      a.el.classList.toggle('on', a.target === 1);
-      if (a.target === 1) any = true;
-      const key = Math.round(a.r * 1000);
-      if (key === a.drawn) return;
-      a.drawn = key;
-      const c = a.ctx, W = a.cv.width, H = a.cv.height;
-      c.clearRect(0, 0, W, H);
-      c.drawImage(a.shape, 0, 0);
-      if (a.r <= 0) return;
-      if (a.r >= 1) { c.clearRect(0, 0, W, H); c.drawImage(a.photo, 0, 0); return; }
-      // photo masked by a soft circle, laid over the navy shape
-      const feather = Math.max(W, H) * .18, rad = io(a.r) * (a.maxR + feather);
-      const t2 = a.tctx;
-      t2.globalCompositeOperation = 'source-over'; t2.clearRect(0, 0, W, H); t2.drawImage(a.photo, 0, 0);
-      const g = t2.createRadialGradient(a.ox, a.oy, Math.max(0, rad - feather), a.ox, a.oy, Math.max(1, rad));
-      g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-      t2.globalCompositeOperation = 'destination-in'; t2.fillStyle = g; t2.fillRect(0, 0, W, H);
-      c.drawImage(a.tmp, 0, 0);
-    });
-    lineup.classList.toggle('focus', any && !noHover);
+    if (noHover) ARTISTS.forEach((a, i) => a.el.classList.toggle('on', i === mid));
+    artPrev.disabled = !span || lineX > -2;
+    artNext.disabled = !span || lineX < -span + 2;
   }
   /* ---------- Loop ---------- */
   function headerTheme() {
