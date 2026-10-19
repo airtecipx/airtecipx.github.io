@@ -140,6 +140,9 @@ body { color: var(--navy); font-family: var(--font-body); line-height: 1.6; }
 .idol img { display: block; height: var(--h, 40vh); width: auto; transition: transform .45s cubic-bezier(.2,.8,.2,1); }
 .idol.on, .idol:hover, .idol:focus-visible { transform: translateY(-8px); }
 .idol:hover img, .idol:focus-visible img { transform: scale(1.02); transform-origin: 50% 100%; }
+.idol.static { cursor: default; }
+.idol.static.on, .idol.static:hover { transform: none; }
+.idol.static:hover img { transform: none; }
 .idol .tag { display: flex; align-items: baseline; gap: 14px; font-family: var(--font-display); }
 .idol .tag i { font-style: normal; font-size: 12px; letter-spacing: .2em; color: var(--navy-soft); font-variant-numeric: tabular-nums; }
 .idol .tag b { font-weight: 600; font-size: clamp(18px, 2vw, 26px); letter-spacing: .02em; text-transform: uppercase; }
@@ -865,21 +868,24 @@ button:focus-visible { outline: 2px solid #ff5a1f; outline-offset: -2px; }
     { name: 'BTS', img: 'images/cut/bts.png', go: ['PRODUCTS', 'K-POP'] },
     { name: 'SEVENTEEN', img: 'images/cut/seventeen.png', go: ['PRODUCTS', 'K-POP', 'SEVENTEEN'] },
     { name: 'ENHYPEN', img: 'images/cut/enhypen.png', go: ['PRODUCTS', 'K-POP', 'ENHYPEN'] },
-    { name: 'i-dle', img: 'images/cut/idle.png', go: ['PRODUCTS', 'K-POP'] },
-    { name: 'HELLO KITTY & JISOO', img: 'images/cut/kitty_jisoo.png', go: ['PRODUCTS', 'CHARACTER'] }
+    // no products on the site yet → shown only, not clickable
+    { name: 'i-dle', img: 'images/cut/idle.png', go: null },
+    { name: 'HELLO KITTY & JISOO', img: 'images/cut/kitty_jisoo.png', go: null }
   ];
   const artists = $('artists'), lineup = $('lineup'), artCount = $('artCount'), artHint = $('artHint');
   const noHover = matchMedia('(hover: none)').matches;
   if (noHover) artHint.textContent = 'SCROLL OR USE ARROWS · TAP FOR PRODUCTS';
   ARTISTS.forEach((a, i) => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'idol'; b.setAttribute('aria-label', `${a.name} 제품 보기`);
-    b.innerHTML = `<img alt="" decoding="async"><span class="tag"><i>${String(i + 1).padStart(2, '0')}</i><b></b></span><span class="go">VIEW PRODUCTS →</span>`;
+    const b = document.createElement(a.go ? 'button' : 'div');
+    b.className = a.go ? 'idol' : 'idol static';
+    if (a.go) { b.type = 'button'; b.setAttribute('aria-label', `${a.name} 제품 보기`); }
+    b.innerHTML = `<img alt="" decoding="async"><span class="tag"><i>${String(i + 1).padStart(2, '0')}</i><b></b></span>` + (a.go ? '<span class="go">VIEW PRODUCTS →</span>' : '');
     b.querySelector('b').textContent = a.name;
     a.im = b.querySelector('img'); a.im.addEventListener('load', sizeLineup); a.im.src = a.img;
+    if (!a.go) a.im.alt = a.name;
     lineup.appendChild(b);
     a.el = b;
-    b.addEventListener('click', () => go(a.go[0], a.go[1], b, a.go[2]));
+    if (a.go) b.addEventListener('click', () => go(a.go[0], a.go[1], b, a.go[2]));
   });
   let lineupW = 0, lineX = 0;
   function sizeLineup() {
