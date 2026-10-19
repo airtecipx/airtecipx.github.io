@@ -865,10 +865,10 @@ button:focus-visible { outline: 2px solid #ff5a1f; outline-offset: -2px; }
 
   /* ---------- 4. Artists: cut-out photos on a sideways track (scroll or arrows), click opens their products ---------- */
   const ARTISTS = [
-    { name: 'BTS', img: 'images/cut/bts.png', go: ['PRODUCTS', 'K-POP'] },
+    // go: null → no products on the site yet, shown only, not clickable
+    { name: 'BTS', img: 'images/cut/bts.png', go: null },
     { name: 'SEVENTEEN', img: 'images/cut/seventeen.png', go: ['PRODUCTS', 'K-POP', 'SEVENTEEN'] },
     { name: 'ENHYPEN', img: 'images/cut/enhypen.png', go: ['PRODUCTS', 'K-POP', 'ENHYPEN'] },
-    // no products on the site yet → shown only, not clickable
     { name: 'i-dle', img: 'images/cut/idle.png', go: null },
     { name: 'HELLO KITTY & JISOO', img: 'images/cut/kitty_jisoo.png', go: null }
   ];
