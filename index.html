@@ -688,7 +688,10 @@ button:focus-visible { outline: 2px solid #ff5a1f; outline-offset: -2px; }
   const darkWorld = el('g', { 'clip-path': 'url(#flood)' }, svg);
   el('rect', { x: -5000, y: -5000, width: 10000, height: 10000, fill: NAVY }, darkWorld);
   const dark = makeSet(darkWorld, { face: '#ffffff', line: '#ffffff' });
-  [light, dark].forEach(set => set.strokes.forEach(s => { let L = 900; try { L = s.p.getTotalLength(); } catch (e) {} s.L = L; s.p.setAttribute('stroke-dasharray', `${L} ${L}`); }));
+  // After the intro: a white logo keeps drawing itself in the empty navy space (outline → fill → fade, on repeat)
+  const loopSet = makeSet(svg, { face: '#ffffff', line: '#ffffff' });
+  loopSet.root.style.opacity = 0;
+  [light, dark, loopSet].forEach(set => set.strokes.forEach(s => { let L = 900; try { L = s.p.getTotalLength(); } catch (e) {} s.L = L; s.p.setAttribute('stroke-dasharray', `${L} ${L}`); }));
 
   let viewW = 1000, viewH = 600, vbX = 0, vbY = 0;
   function sizeIntro() {
@@ -744,8 +747,24 @@ button:focus-visible { outline: 2px solid #ff5a1f; outline-offset: -2px; }
     hud.classList.toggle('inv', flood > .35);
     hud.style.opacity = (seg(t, 0, .06) * (1 - seg(t, .9, .97))).toFixed(3);
   }
+  const LOOP_MS = 5600, LOOP_DELAY = 600;
+  let loopStart = 0;
+  function loopStage(t) {
+    if (t < 1) { loopStart = 0; loopSet.root.style.opacity = 0; return; }
+    const now = performance.now();
+    if (!loopStart) loopStart = now + LOOP_DELAY;
+    const c = reduce ? .6 : now < loopStart ? 0 : ((now - loopStart) % LOOP_MS) / LOOP_MS;
+    const draw = seg(c, .02, .44), fill = io(seg(c, .44, .58));
+    loopSet.strokes.forEach((s, n) => {
+      const local = clamp(draw * 1.9 - n * .1);
+      s.p.setAttribute('stroke-dashoffset', (s.L * (1 - out(local))).toFixed(1));
+      s.p.setAttribute('fill-opacity', fill.toFixed(3));
+      s.p.setAttribute('stroke-opacity', (1 - fill * .6).toFixed(3));
+    });
+    loopSet.root.style.opacity = (seg(c, 0, .02) * (1 - io(seg(c, .8, .94)))).toFixed(3);
+  }
   function updateIntro(t) {
-    applySet(light, t); applySet(dark, t); ringStage(t); techStage(t);
+    applySet(light, t); applySet(dark, t); ringStage(t); techStage(t); loopStage(t);
     guide.setAttribute('opacity', (.14 * (1 - seg(t, .05, .3))).toFixed(3));
     const flood = io(seg(t, .72, .86));
     floodCircle.setAttribute('r', (flood * Math.hypot(viewW, viewH)).toFixed(1));
